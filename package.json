@@ -1,0 +1,35 @@
+{
+  "name": "xow",
+  "version": "1.0.0",
+  "description": "A xain-based view engine for the browser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alon Niv",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oakfang/xow.git"
+  },
+  "keywords": [
+    "proxy",
+    "observe",
+    "observable",
+    "reactive",
+    "view",
+    "virtual-dom"
+  ],
+  "bugs": {
+    "url": "https://github.com/oakfang/xow/issues"
+  },
+  "homepage": "https://github.com/oakfang/xow#readme",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "dependencies": {
+    "dom-delegator": "^13.1.0",
+    "virtual-dom": "^2.1.1",
+    "xain": "^1.0.0"
+  }
+}
