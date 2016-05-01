@@ -52,18 +52,18 @@ class Foo extends Component(state) {
     }
 }
 
-const foo = new Foo;
-const btn = new Button;
-
 class Main extends Component() {
     render() {
-        return xow.h('div', {}, [
+        const { foo, btn } = this.props;
+        return h('div', {}, [
             foo.asElement,
             btn.asElement
         ]);
     }
 }
 
-
-xow.renderTo(document.getElementById('container'), new Main);
+renderTo(document.getElementById('container'), new Main({
+    foo: new Foo,
+    btn: new Button
+}));
 ```
