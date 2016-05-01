@@ -1,23 +1,19 @@
 'use strict';
 
-const diff = require('virtual-dom/diff');
-const patch = require('virtual-dom/patch');
-const createElement = require("virtual-dom/create-element");
-const h = require("virtual-dom/h");
+const {patch} = require('incremental-dom');
 
 const Component = require('./component');
+const element = require('./dsl');
+
+function renderTo(htmlElement, component) {
+    patch(htmlElement, component.$);
+    component.constructor.$emitter.on('render', () => {
+        patch(htmlElement, component.$);
+    });
+}
 
 module.exports = {
     Component,
-    h,
-    renderTo(htmlElement, component) {
-        let el = createElement(component.asElement);
-        component.constructor.$emitter.on('render', () => {
-            const tree = component.asElement;
-            const newTree = component.render();
-            const patches = diff(tree, newTree);
-            el = patch(el, patches);
-        });
-        htmlElement.appendChild(el);
-    }
+    renderTo,
+    element
 };

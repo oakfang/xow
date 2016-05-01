@@ -31,13 +31,13 @@ const state = xain.observable({
 
 class Button extends xow.Component(state) {
     render() {
-        return xow.h('button', {'ev-click': () => {state.age += 1}}, [
+        return xow.element('button', {onclick() {state.age += 1}}, [
             'Grow up!'
         ]);
     }
 }
 
-class Foo extends Component(state) {
+class Foo extends xow.Component(state) {
     static reaction(state) {
         return {
             name: xain.link(state, ({firstName, lastName}) => firstName + ' ' + lastName),
@@ -46,24 +46,24 @@ class Foo extends Component(state) {
     }
     render() {
         const {name, age} = this.props;
-        return xow.h('div', {}, [
+        return xow.element('div', {}, [
             `${name} - ${age}`
         ]);
     }
 }
 
-const foo = new Foo;
-const btn = new Button;
-
-class Main extends Component() {
+class Main extends xow.Component() {
     render() {
-        return xow.h('div', {}, [
-            foo.asElement,
-            btn.asElement
+        const { foo, btn } = this.props;
+        return xow.element('div', {}, [
+            foo.$,
+            btn.$
         ]);
     }
 }
 
-
-xow.renderTo(document.getElementById('container'), new Main);
+xow.renderTo(document.getElementById('container'), new Main({
+    foo: new Foo,
+    btn: new Button
+}));
 ```

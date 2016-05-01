@@ -1,6 +1,6 @@
 {
   "name": "xow",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A xain-based view engine for the browser",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,7 @@
     "node": ">=6.0.0"
   },
   "dependencies": {
-    "dom-delegator": "^13.1.0",
-    "virtual-dom": "^2.1.1",
+    "incremental-dom": "^0.4.1",
     "xain": "^1.0.0"
   }
 }
