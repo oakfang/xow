@@ -65,7 +65,6 @@ class TaskList extends Component(state) {
 }
 
 class Task extends Component() {
-    static reaction() {return {}}
     render() {
         const {task, i} = this.props;
         return ['li', {
