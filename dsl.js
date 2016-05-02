@@ -19,8 +19,11 @@ function html(tag, props={}, children=null) {
     if (!children) {
         elementVoid(tag, key, null, ...propsToPairs(props));
     } else {
+        if (typeof children === 'string') {
+            children = [children];
+        }
         elementOpen(tag, key, null, ...propsToPairs(props));
-        children.forEach(child => {
+        children.filter(child => child).forEach(child => {
             if (Array.isArray(child)) {
                 html(...child);
             } else if (typeof child === 'function') {
