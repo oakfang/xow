@@ -19,11 +19,12 @@ let id = 0;
 class TaskAdder extends Component(state) {
     static reaction(state) {
         return {
-            current: pipe(state, 'currentInput')
+            current: pipe(state, 'currentInput'),
+            disabledCount: link(state, ({tasks}) => tasks.filter(({enabled}) => !enabled).length)
         }
     }
     render() {
-        const {current} = this.props;
+        const {current, disabledCount} = this.props;
         return ['div', {}, [
             ['input', {
                 value: new String(current),
@@ -40,10 +41,11 @@ class TaskAdder extends Component(state) {
             }, ['Add']],
             ['button', {
                 style: {display: 'inline-block'},
+                disabled: disabledCount ? undefined : true,
                 onclick() {
                     state.tasks = state.tasks.filter(({enabled}) => enabled);
                 }
-            }, ['Clear all done']]
+            }, 'Clear all done']
         ]];
     }
 }
@@ -58,8 +60,8 @@ class TaskList extends Component(state) {
     render() {
         const {tasks, taskCount} = this.props;
         return ['div', {}, [
-            ['p', {}, [`Task count is: ${taskCount}`]],
-            ['ul', {}, tasks.map((task, i) => (new Task({task, i})).$)]
+            ['h3', {}, `Task count is: ${taskCount}`],
+            ['ul', {style: {'padding': 0}}, tasks.map((task, i) => (new Task({task, i})).$)]
         ]];
     }
 }
@@ -69,13 +71,22 @@ class Task extends Component() {
         const {task, i} = this.props;
         return ['li', {
             key: task.id,
-            style: {'text-decoration': task.enabled ? 'initial' : 'line-through'},
+            style: {'list-style-type': 'none'},
             onclick: () => {
                 state.tasks = [...state.tasks.slice(0, i), 
                                Object.assign({}, task, {enabled: !task.enabled}),
                                ...state.tasks.slice(i + 1)];
             }
-        }, [task.text]]
+        }, [
+            ['input', {
+                type: 'checkbox',
+                checked: task.enabled ? undefined : true,
+                style: {'display': 'inline-block', 'margin-right': '25px', 'vertical-align': 'bottom'}
+            }],
+            ['span', {
+                style: {'text-decoration': task.enabled ? 'initial' : 'line-through'}
+            }, task.text]
+        ]]
     }
 }
 
@@ -83,9 +94,7 @@ class Main extends Component() {
     render() {
         const { newTask, list } = this.props;
         return ['div', {}, [
-            ['h1', {}, [
-                'Welcome!'
-            ]],
+            ['h1', {}, 'Welcome!'],
             newTask.$,
             list.$
         ]];
