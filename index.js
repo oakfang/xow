@@ -3,7 +3,7 @@
 const {patch} = require('incremental-dom');
 
 const Component = require('./component');
-const element = require('./dsl');
+const {html, html$} = require('./dsl');
 
 function renderTo(htmlElement, component) {
     patch(htmlElement, component.$);
@@ -15,5 +15,6 @@ function renderTo(htmlElement, component) {
 module.exports = {
     Component,
     renderTo,
-    element
+    html,
+    html$
 };

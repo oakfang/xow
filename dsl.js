@@ -10,7 +10,7 @@ function propsToPairs(props) {
     }, []);
 }
 
-function element(tag, props={}, children=null) {
+function html(tag, props={}, children=null) {
     let key = null;
     if ('key' in props) {
         key = props.key;
@@ -21,11 +21,22 @@ function element(tag, props={}, children=null) {
     } else {
         elementOpen(tag, key, null, ...propsToPairs(props));
         children.forEach(child => {
-            typeof child === 'function' ? child() : text(child);
+            if (Array.isArray(child)) {
+                html(...child);
+            } else if (typeof child === 'function') {
+                let rendered = child();
+                if (Array.isArray(rendered)) html(...rendered);
+            } else {
+                text(child);
+            }
         });
         elementClose(tag);
     }
 }
 
+function html$(tag, props={}, children=null) {
+    return () => html(tag, props, children);
+}
 
-module.exports = element;
+
+module.exports = {html, html$};

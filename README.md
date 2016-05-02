@@ -20,49 +20,52 @@ A xain-based view engine for the browser
 
 'use strict';
 
-const xow = require('xow');
-const xain = require('xain');
+const {Component, renderTo} = require('xow');
+const {observable, link, pipe} = require('xain');
 
-const state = xain.observable({
+const state = observable({
     firstName: 'Foo',
     lastName: 'Bar',
     age: 5
 });
 
-class Button extends xow.Component(state) {
+class Button extends Component(state) {
     render() {
-        return xow.element('button', {onclick() {state.age += 1}}, [
+        return ['button', {onclick() {state.age += 1}}, [
             'Grow up!'
-        ]);
+        ]];
     }
 }
 
-class Foo extends xow.Component(state) {
+class Foo extends Component(state) {
     static reaction(state) {
         return {
-            name: xain.link(state, ({firstName, lastName}) => firstName + ' ' + lastName),
-            age: xain.pipe(state, 'age')
+            name: link(state, ({firstName, lastName}) => firstName + ' ' + lastName),
+            age: pipe(state, 'age')
         }
     }
     render() {
         const {name, age} = this.props;
-        return xow.element('div', {}, [
+        return ['div', {}, [
             `${name} - ${age}`
-        ]);
+        ]];
     }
 }
 
-class Main extends xow.Component() {
+class Main extends Component() {
     render() {
         const { foo, btn } = this.props;
-        return xow.element('div', {}, [
+        return ['div', {}, [
+            ['h1', {}, [
+                'Welcome!'
+            ]],
             foo.$,
             btn.$
-        ]);
+        ]];
     }
 }
 
-xow.renderTo(document.getElementById('container'), new Main({
+renderTo(document.getElementById('container'), new Main({
     foo: new Foo,
     btn: new Button
 }));

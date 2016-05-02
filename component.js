@@ -2,6 +2,7 @@
 
 const EventEmitter = require('events');
 const {reactive, observe} = require('xain');
+const {html} = require('./dsl');
 
 const reRender = new EventEmitter();
 
@@ -21,7 +22,12 @@ module.exports = function Component(...states) {
             }
         }
         get $() {
-            return this.render;
+            return () => {
+                let rendered = this.render();
+                if (Array.isArray(rendered)) {
+                    html(...rendered);
+                }
+            };
         }
         render() { throw new Error('Abstract render called') }
     }
