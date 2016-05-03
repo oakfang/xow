@@ -3,7 +3,8 @@
 const {patch} = require('incremental-dom');
 
 const Component = require('./component');
-const {html, html$, YES, NO} = require('./dsl');
+const {YES, NO} = require('./dsl');
+const dom = require('./jsx');
 
 function renderTo(htmlElement, component) {
     patch(htmlElement, component.$);
@@ -15,8 +16,7 @@ function renderTo(htmlElement, component) {
 module.exports = {
     Component,
     renderTo,
-    html,
-    html$,
+    dom,
     YES,
     NO
 };

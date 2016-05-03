@@ -15,42 +15,34 @@ function propsToPairs(context, props) {
         if (typeof value === 'function') {
             value = value.bind(context);
         } else if (value === YES) {
-            value = true;
+            value = prop;
         }
         pairs.push(value);
         return pairs;
     }, []);
 }
 
-function html(context, tag, props={}, children=null) {
+function html(context, tag, props={}, children=[]) {
     let key = null;
     if ('key' in props) {
         key = props.key;
         delete props.key;
     }
-    if (!children) {
-        elementVoid(tag, key, null, ...propsToPairs(context, props));
-    } else {
-        if (typeof children === 'string') {
-            children = [children];
-        }
-        elementOpen(tag, key, null, ...propsToPairs(context, props));
-        children.filter(child => child).forEach(child => {
-            if (Array.isArray(child)) {
-                html(context, ...child);
-            } else if (typeof child === 'function') {
-                child();
-            } else {
-                text(child);
-            }
-        });
-        elementClose(tag);
+    if (typeof children === 'string') {
+        children = [children];
     }
+    elementOpen(tag, key, null, ...propsToPairs(context, props));
+    children.filter(child => child != null).forEach(child => {
+        if (Array.isArray(child)) {
+            html(context, ...child);
+        } else if (typeof child === 'function') {
+            child();
+        } else {
+            text(child);
+        }
+    });
+    elementClose(tag);
 }
 
-function html$(context, tag, props={}, children=null) {
-    return () => html(context, tag, props, children);
-}
 
-
-module.exports = {html, html$, YES, NO};
+module.exports = {html, YES, NO};
