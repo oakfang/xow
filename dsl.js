@@ -2,6 +2,8 @@
 
 const {elementOpen, elementClose, elementVoid, text} = require('incremental-dom');
 
+const SYM_CHILD = Symbol('@@children-list');
+
 const YES = Symbol('@@yes');
 const NO = Symbol('@@no');
 
@@ -22,6 +24,20 @@ function propsToPairs(context, props) {
     }, []);
 }
 
+function handleChild(context) {
+    return child => {
+        if (Array.isArray(child)) {
+            html(context, ...child);
+        } else if (typeof child === 'function') {
+            child();
+        } else if (typeof child === 'object' && SYM_CHILD in child) {
+            child[SYM_CHILD].filter(child => child != null).forEach(handleChild(context))
+        } else {
+            text(child);
+        }
+    }
+}
+
 function html(context, tag, props={}, children=[]) {
     let key = null;
     if ('key' in props) {
@@ -32,17 +48,13 @@ function html(context, tag, props={}, children=[]) {
         children = [children];
     }
     elementOpen(tag, key, null, ...propsToPairs(context, props));
-    children.filter(child => child != null).forEach(child => {
-        if (Array.isArray(child)) {
-            html(context, ...child);
-        } else if (typeof child === 'function') {
-            child();
-        } else {
-            text(child);
-        }
-    });
+    children.filter(child => child != null).forEach(handleChild(context));
     elementClose(tag);
 }
 
+function children(elements) {
+    return {[SYM_CHILD]: elements};
+}
 
-module.exports = {html, YES, NO};
+
+module.exports = {html, YES, NO, children};
