@@ -2,33 +2,44 @@
 
 const {elementOpen, elementClose, elementVoid, text} = require('incremental-dom');
 
-function propsToPairs(props) {
+const YES = Symbol('@@yes');
+const NO = Symbol('@@no');
+
+function propsToPairs(context, props) {
     return Object.keys(props).reduce((pairs, prop) => {
+        let value = props[prop];
+        if (value === NO) {
+            return pairs;
+        }
         pairs.push(prop);
-        pairs.push(props[prop]);
+        if (typeof value === 'function') {
+            value = value.bind(context);
+        } else if (value === YES) {
+            value = true;
+        }
+        pairs.push(value);
         return pairs;
     }, []);
 }
 
-function html(tag, props={}, children=null) {
+function html(context, tag, props={}, children=null) {
     let key = null;
     if ('key' in props) {
         key = props.key;
         delete props.key;
     }
     if (!children) {
-        elementVoid(tag, key, null, ...propsToPairs(props));
+        elementVoid(tag, key, null, ...propsToPairs(context, props));
     } else {
         if (typeof children === 'string') {
             children = [children];
         }
-        elementOpen(tag, key, null, ...propsToPairs(props));
+        elementOpen(tag, key, null, ...propsToPairs(context, props));
         children.filter(child => child).forEach(child => {
             if (Array.isArray(child)) {
-                html(...child);
+                html(context, ...child);
             } else if (typeof child === 'function') {
-                let rendered = child();
-                if (Array.isArray(rendered)) html(...rendered);
+                child();
             } else {
                 text(child);
             }
@@ -37,9 +48,9 @@ function html(tag, props={}, children=null) {
     }
 }
 
-function html$(tag, props={}, children=null) {
-    return () => html(tag, props, children);
+function html$(context, tag, props={}, children=null) {
+    return () => html(context, tag, props, children);
 }
 
 
-module.exports = {html, html$};
+module.exports = {html, html$, YES, NO};

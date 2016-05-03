@@ -1,5 +1,5 @@
 # xow
-A xain-based view engine for the browser
+A [xain](https://github.com/oakfang/xain)-based view engine for the browser
 
 **Note:** the usage of `xow` in the browser is *critically* dependent on the following ES2015 features:
 
@@ -14,6 +14,8 @@ A xain-based view engine for the browser
 ## Usage
 
 *(This example puts everything in 1 file, don't do that)*
+
+*(A more comprehensive [example](https://github.com/oakfang/xow/blob/master/examples/todo.js) exists in the examples dir :smile: )*
 
 ```js
 // app.js

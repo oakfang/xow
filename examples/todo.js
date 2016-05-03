@@ -1,6 +1,6 @@
 'use strict';
 
-const {Component, renderTo} = require('xow');
+const {Component, renderTo, YES, NO} = require('xow');
 const {observable, observe, link, pipe} = require('xain');
 
 let storedState = localStorage.getItem('state');
@@ -10,13 +10,15 @@ const state = observable(storedState ? JSON.parse(storedState) : {
     tasks: []
 });
 
+const App = Component(state);
+
 observe(state, () => {
     localStorage.setItem('state', JSON.stringify(state));
 });
 
 let id = 0;
 
-class TaskAdder extends Component(state) {
+class TaskAdder extends App {
     static reaction(state) {
         return {
             current: pipe(state, 'currentInput'),
@@ -29,28 +31,28 @@ class TaskAdder extends Component(state) {
             ['input', {
                 value: new String(current),
                 style: {display: 'inline-block'}, 
-                oninput(e) {state.currentInput = e.target.value}
+                oninput(e) {this.state.currentInput = e.target.value}
             }],
             ['button', {
                 style: {display: 'inline-block'}, 
-                disabled: current ? undefined : true,
+                disabled: current ? NO : YES,
                 onclick() {
-                    state.tasks = [...state.tasks, {text: current, id: id++, enabled: true}];
-                    state.currentInput = '';
+                    this.state.tasks = [...state.tasks, {text: current, id: id++, enabled: true}];
+                    this.state.currentInput = '';
                 }
             }, ['Add']],
             ['button', {
                 style: {display: 'inline-block'},
-                disabled: disabledCount ? undefined : true,
+                disabled: disabledCount ? NO : YES,
                 onclick() {
-                    state.tasks = state.tasks.filter(({enabled}) => enabled);
+                    this.state.tasks = this.state.tasks.filter(({enabled}) => enabled);
                 }
             }, 'Clear all done']
         ]];
     }
 }
 
-class TaskList extends Component(state) {
+class TaskList extends App {
     static reaction(state) {
         return {
             tasks: pipe(state, 'tasks'),
@@ -66,21 +68,21 @@ class TaskList extends Component(state) {
     }
 }
 
-class Task extends Component() {
+class Task extends App {
     render() {
         const {task, i} = this.props;
         return ['li', {
             key: task.id,
             style: {'list-style-type': 'none'},
-            onclick: () => {
-                state.tasks = [...state.tasks.slice(0, i), 
-                               Object.assign({}, task, {enabled: !task.enabled}),
-                               ...state.tasks.slice(i + 1)];
+            onclick() {
+                this.state.tasks = [...this.state.tasks.slice(0, i), 
+                                    Object.assign({}, task, {enabled: !task.enabled}),
+                                    ...this.state.tasks.slice(i + 1)];
             }
         }, [
             ['input', {
                 type: 'checkbox',
-                checked: task.enabled ? undefined : true,
+                checked: task.enabled ? NO : YES,
                 style: {'display': 'inline-block', 'margin-right': '25px', 'vertical-align': 'bottom'}
             }],
             ['span', {
@@ -90,7 +92,7 @@ class Task extends Component() {
     }
 }
 
-class Main extends Component() {
+class Main extends App {
     render() {
         const { newTask, list } = this.props;
         return ['div', {}, [
