@@ -1,6 +1,5 @@
 'use strict';
 
-const EventEmitter = require('events');
 const {reactive, observe, observable} = require('xain');
 const {html, SYM_COMPONENT} = require('./dsl');
 
