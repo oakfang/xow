@@ -2,16 +2,19 @@
 
 const EventEmitter = require('events');
 const {reactive, observe} = require('xain');
-const {html} = require('./dsl');
+const {html, SYM_COMPONENT} = require('./dsl');
 
 const reRender = new EventEmitter();
 
 module.exports = function Component(...states) {
     return class {
         static get $emitter() { return reRender }        
-        constructor(props={}) {
+        constructor(props={}, children=[]) {
             const reaction = this.constructor.reaction;
-            this.props = reaction ? reactive(Object.assign({}, reaction(...states), props)) : Object.assign({}, props);
+            this.props = (reaction ? 
+                            reactive(Object.assign({}, reaction(...states), props, {children})) : 
+                            Object.assign({}, props, {children}));
+            this[SYM_COMPONENT] = true;
             this.render = this.render.bind(this);
             this.$ = this.$.bind(this);
 

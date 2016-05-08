@@ -3,6 +3,7 @@
 const {elementOpen, elementClose, elementVoid, text} = require('incremental-dom');
 
 const SYM_CHILD = Symbol('@@children-list');
+const SYM_COMPONENT = Symbol('@@component');
 
 const YES = Symbol('@@yes');
 const NO = Symbol('@@no');
@@ -28,8 +29,8 @@ function handleChild(context) {
     return child => {
         if (Array.isArray(child)) {
             html(context, ...child);
-        } else if (typeof child === 'function') {
-            child();
+        } else if (child[SYM_COMPONENT]) {
+            child.$();
         } else if (typeof child === 'object' && SYM_CHILD in child) {
             child[SYM_CHILD].filter(child => child != null).forEach(handleChild(context))
         } else {
@@ -57,4 +58,4 @@ function children(elements) {
 }
 
 
-module.exports = {html, YES, NO, children};
+module.exports = {html, YES, NO, children, SYM_COMPONENT};
