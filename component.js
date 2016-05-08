@@ -1,14 +1,14 @@
 'use strict';
 
 const EventEmitter = require('events');
-const {reactive, observe} = require('xain');
+const {reactive, observe, observable} = require('xain');
 const {html, SYM_COMPONENT} = require('./dsl');
 
-const reRender = new EventEmitter();
+const iState = observable({changes: 0}, true);
+const onChange = observe.bind(null, iState);
 
-module.exports = function Component(...states) {
+function Component(...states) {
     return class {
-        static get $emitter() { return reRender }        
         constructor(props={}, children=[]) {
             const reaction = this.constructor.reaction;
             this.props = (reaction ? 
@@ -20,7 +20,7 @@ module.exports = function Component(...states) {
 
             if (reaction) {
                 observe(this.props, () => {
-                    reRender.emit('render');
+                    iState.changes++;
                 });
             }
         }
@@ -34,4 +34,6 @@ module.exports = function Component(...states) {
         get state() { return states[0] }
         render() { throw new Error('Abstract render called') }
     }
-};
+}
+
+module.exports = {Component, onChange};
