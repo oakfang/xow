@@ -48,9 +48,22 @@ function html(context, tag, props={}, children=[]) {
     if (typeof children === 'string') {
         children = [children];
     }
-    elementOpen(tag, key, null, ...propsToPairs(context, props));
-    children.filter(child => child != null).forEach(handleChild(context));
-    elementClose(tag);
+    if (typeof tag === 'string') {
+        elementOpen(tag, key, null, ...propsToPairs(context, props));
+        children.filter(child => child != null).forEach(handleChild(context));
+        elementClose(tag);
+    } else {
+        const component = new tag(props, children.reduce((subs, sub) => {
+            if (typeof sub === 'object' && SYM_CHILD in sub) {
+                sub[SYM_CHILD].forEach(c => subs.push(c));
+            } else {
+                subs.push(sub)
+            }
+            return subs;
+        }, []));
+        if (context) component.$();
+        return component;
+    }
 }
 
 function children(elements) {
