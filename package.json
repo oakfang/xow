@@ -1,6 +1,6 @@
 {
   "name": "xow",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "A xain-based view engine for the browser",
   "main": "index.js",
   "scripts": {

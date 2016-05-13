@@ -10,7 +10,7 @@ function renderTo(htmlElement, component) {
     if (Array.isArray(component)) {
         component = html(null, ...component);
     }
-    patch(htmlElement, component.$);
+    setTimeout(() => patch(htmlElement, component.$), 0);
     onChange(() => patch(htmlElement, component.$));
 }
 
