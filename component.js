@@ -1,32 +1,22 @@
 'use strict';
 
-const {reactive, observe, observable} = require('xain');
-const {html, SYM_COMPONENT} = require('./dsl');
+const {reactive, observe, observable, stream, viewOf} = require('xain');
 
 const iState = observable({changes: 0}, true);
-const onChange = observe.bind(null, iState);
 
-function Component(...states) {
+const fullTreeChange = rootComponent =>
+    observe.bind(null, stream(iState).map(rootComponent.xRender));
+
+function ComplexComponent(...states) {
     return class {
-        constructor(props={}, children=[]) {
-            const reaction = this.constructor.reaction;
+        constructor(props={}) {
+            const reaction = new.target.reaction;
             this.props = (reaction ? 
-                            reactive(Object.assign({}, reaction(...states), props, {children})) : 
-                            Object.assign({}, props, {children}));
-            this[SYM_COMPONENT] = true;
-            this.render = this.render.bind(this);
-            this.$ = this.$.bind(this);
+                            reactive(Object.assign({}, reaction(...states), props)) : 
+                            props);
 
             if (reaction) {
-                observe(this.props, () => {
-                    iState.changes++;
-                });
-            }
-        }
-        $() {
-            let rendered = this.render();
-            if (Array.isArray(rendered)) {
-                html(this, ...rendered);
+                observe(this.props, () => iState.changes++);
             }
         }
         get states() { return states }
@@ -35,4 +25,20 @@ function Component(...states) {
     }
 }
 
-module.exports = {Component, onChange};
+function Component(state) {
+    return class {
+        constructor(props={}) {
+            const viewSpec = new.target.view;
+            this.props = props;
+            if (viewSpec) {
+                const view = viewOf(state, viewSpec());
+                this.props = Object.assign({}, this.props, view);
+                observe(view, () => iState.changes++);
+            }
+        }
+        get state() { return state }
+        render() { throw new Error('Abstract render called') }
+    };
+}
+
+module.exports = {Component, fullTreeChange, ComplexComponent};

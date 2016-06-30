@@ -1,24 +1,17 @@
 'use strict';
 
-const {patch} = require('incremental-dom');
-
-const {Component, onChange} = require('./component');
-const {YES, NO, children, html} = require('./dsl');
-const dom = require('./jsx');
+const {Component, fullTreeChange, ComplexComponent} = require('./component');
+const {getDynamicRoot, dom} = require('./dom');
 
 function renderTo(htmlElement, component) {
-    if (Array.isArray(component)) {
-        component = html(null, ...component);
-    }
-    setTimeout(() => patch(htmlElement, component.$), 0);
-    onChange(() => patch(htmlElement, component.$));
+    setTimeout(() => getDynamicRoot(htmlElement,
+                                    component,
+                                    fullTreeChange(component)), 0);
 }
 
 module.exports = {
     Component,
+    ComplexComponent,
     renderTo,
     dom,
-    YES,
-    NO,
-    children
 };
