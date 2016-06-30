@@ -8,7 +8,7 @@ A [xain](https://github.com/oakfang/xain)-based view engine for the browser
 - `const` / `let`
 - Everything else required by `xain`
 
-*tl;dr* - use only on latest chrome versions :smile:
+*tl;dr* - use only on latest chrome versions!
 
 ## Example code
 You can tour a JSX example usage of `xow` right [here.](https://github.com/oakfang/xow-todo)
@@ -16,20 +16,17 @@ You can tour a JSX example usage of `xow` right [here.](https://github.com/oakfa
 ## The cogs of the machine
 
 ```js
-const { Component, renderTo, dom, YES, NO, children } = require('xow');
+const { Component, renderTo, dom, ComplexComponent } = require('xow');
 ```
 
 Okay, let's start of by splitting these cogs into 2 groups:
-
-- **core** (Component, renderTo, YES, NO): you'll find yourself using all of these on every `xow` project
-- **JSX enablers** (dom, renderTo): you don't *need* these, but if you like JSX - you're gonna at least write these words
 
 ### Core
 
 #### `Component`
 Possibly the most important function here.
 `xow` revolves around using components sharing a single `observable` (as in `xain` `observable`) state.
-`Component` is a function (not a class! not a class!) that accepts a variable amount of `observable` states (as in ...states),
+`Component` is a function (not a class! not a class!) that accepts a single `observable` state,
 and returns the base class your actual components should inherit from.
 So, first step to creating a new app would be creating the following module:
 
@@ -56,26 +53,26 @@ Now, lets write our first component up:
 ```js
 // components/main.js
 
+const {dom} = require('xow');
 const App = require('./base');
-const {pipe, link} = require('xain');
 
 /*
-The Main constructor accepts `props` (a plain object) and `children` (an array)
-to be assigned into `props`. Both can be neglected for a default value of `{}` and `[]`, respectively.
+The Main constructor accepts `props` (a plain object) that constains the key `children` (an array).
+It can be neglected for a default value of `{}`.
 */
 module.exports = class Main extends App {
     /*
-    This is the *reactive element* of the component.
-    The `state` param is actually the same parameter(s) passed to the base `Component` constructor.
-    Basically, if your component should react to state changes, this is where you should declare
-    how the properties of your component should be derived from the shared state(s), and therefore,
-    when to react to state changes.
-    This properties are combined into the `this.props` property.
+    This is the *view spec* of the component.
+    A xain view of the App's state is created with this static spec, to create an observable reduction
+    of the main state, specifying to which state changes this component should react to.
+    This view's properties are combined into the `this.props` property.
     */
-    static reaction(state) {
+    static view() {
         return {
-            age: pipe(state, 'age'),
-            name: link(state, ({firstName, lastName}) => `${firstName} ${lastName}`)
+            age: 'age',
+            name({firstName, lastName}) {
+                return `${firstName} ${lastName}`;
+            }
         }
     }
     /*
@@ -83,27 +80,25 @@ module.exports = class Main extends App {
     */
     render() {
         const {age, name, children} = this.props;
-        // `render` should return a recursive array that consists of three elements:
-        // 0 - tagname
-        // 1 - attributes (optional)
-        // 2 - array of children (optional), where each child has to be either: the same format of array, a component or a string.
-        return ['h1', {style: {color: 'red'}}, [`${name}: ${age}`,
+        return dom('h1', {style: {color: 'red'}}, [`${name}: ${age}`,
             ...children
-        ]];
+        ]);
     }
 }
 ```
 
-#### `YES`/`NO`
-This one's easy. When you have, let's say, a `button` element that should sometimes be disabled, you'd think you can just:
+### Stateless Components
+Not all components need acccess to the state or need to know whenever they should update. Some are simply a modular way to handle common usage of HTML nodes. Just like react, you can export an arrow function that gets its props as its single parameter, and returns the dom tree:
 
-`return ['button', {disabled: condition}, ['Meow']];`
+```js
+const {dom} = require('xow');
 
-However, `xow` *always* assigns the value given to the attribute to it, and most browsers will treat certain attributes (e.g. `disabled` and `checked`) as true as long as they exist, meaning `disabled: false` will still be disabled on a browser.
-
-To fix that, `xow` exposes `YES` and `NO`, special values for these special attributes. Use them as if they were equivalent to booleans:
-
-`return ['button', {disabled: condition ? YES : NO}, ['Meow']];`
+module.exports = ({text}) => (
+    <div>
+        <p>{text}!</p>
+    </div>
+);
+```
 
 #### `renderTo`
 Finally, we want to mount our app to the `document`, so let's just:
@@ -111,11 +106,11 @@ Finally, we want to mount our app to the `document`, so let's just:
 ```js
 // app.js
 
-const {renderTo} = require('xow');
+const {renderTo, dom} = require('xow');
 const Main = require('./components/main');
 
-renderTo(document.getElementById('container'), new Main({}, [
-    ['p', {}, 'Hello, world!']
+renderTo(document.getElementById('container'), dom(Main, {}, [
+    dom('p', {}, 'Hello, world!')
 ]));
 ```
 
@@ -135,12 +130,6 @@ plugins: [
 ]
 ```
 
-### `dom` and `children`
-Once you decided to use JSX, make sure every module has this function at least at module scope, otherwise things break.
-It's also important to note that, currently, using components as tags is not supported, and when using sub-components you should simply escape the JSX as you would have with any other variable.
-
-If your components uses the `children` prop, you should escape it using the `children` function.
-
 Here's `main.js` above, JSX style:
 
 ```jsx
@@ -151,10 +140,12 @@ const {pipe, link} = require('xain');
 const {dom, children} = require('xow');
 
 module.exports = class Main extends App {
-    static reaction(state) {
+    static view() {
         return {
-            age: pipe(state, 'age'),
-            name: link(state, ({firstName, lastName}) => `${firstName} ${lastName}`)
+            age: 'age',
+            name({firstName, lastName}) {
+                return `${firstName} ${lastName}`;
+            }
         }
     }
     render() {
@@ -162,9 +153,16 @@ module.exports = class Main extends App {
         return (
             <h1 style={{color: 'red'}}>
                 {name}: {age}
-                {children(this.props.children)}
+                {...this.props.children}
             </h1>
         );
     }
 }
 ```
+
+### Complex Components
+When creating a compnent with props which should be derived from 2 or more state trees,
+you can use `ComplexComponent`, which is a lot like the `Component` class factory, only it accets `...states`
+instead of `state` as a parameter, its `view` function is called `reaction`,
+it is passed the same `...states` passed to the factory, in the same order,
+and it returns the spec for a xain `reactive` object, using the regular `pipe` and `link` values.

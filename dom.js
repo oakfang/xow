@@ -3,11 +3,11 @@ const diff = require('virtual-dom/diff');
 const patch = require('virtual-dom/patch');
 const createElement = require('virtual-dom/create-element');
 
-function dom(element, props={}, children=[]) {
+function dom(element, props={}, ...children) {
     switch (typeof element) {
         case 'string': return h(element, props, children);
         case 'function':
-            const properties = Object.assign({}, props, {children});
+            const properties = Object.assign({}, props || {}, {children});
             if (element.prototype) {
                 const component = new element(properties);
                 return Object.assign(component.render(), {
